@@ -1,0 +1,254 @@
+@model List<MyMvcApp.Models.Order>
+@{
+    ViewData["Title"] = "Orders Management";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>📦 Orders Management</h2>
+    <div>
+        <span class="badge bg-primary">Total: @Model.Count</span>
+        <span class="badge bg-warning">Pending: @Model.Count(o => o.Status == MyMvcApp.Models.OrderStatus.Pending)</span>
+        <span class="badge bg-success">Delivered: @Model.Count(o => o.Status == MyMvcApp.Models.OrderStatus.Delivered)</span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="card-title mb-0">All Orders</h5>
+            </div>
+            <div class="col-auto">
+                <select id="statusFilter" class="form-select" onchange="filterOrders()">
+                    <option value="">All Status</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="ordersTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Contact</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model.OrderByDescending(o => o.OrderDate))
+                    {
+                        <tr>
+                            <td>
+                                <strong>#@order.Id</strong>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>@order.CustomerName</strong>
+                                </div>
+                                <small class="text-muted">@order.ShippingAddress</small>
+                            </td>
+                            <td>
+                                <div>@order.CustomerEmail</div>
+                                <small class="text-muted">@order.CustomerPhone</small>
+                            </td>
+                            <td>
+                                <strong>$@order.TotalAmount.ToString("F2")</strong>
+                            </td>
+                            <td>
+                                @{
+                                    var statusClass = order.Status switch
+                                    {
+                                        MyMvcApp.Models.OrderStatus.Pending => "bg-warning",
+                                        MyMvcApp.Models.OrderStatus.Confirmed => "bg-info",
+                                        MyMvcApp.Models.OrderStatus.Processing => "bg-primary",
+                                        MyMvcApp.Models.OrderStatus.Shipped => "bg-secondary",
+                                        MyMvcApp.Models.OrderStatus.Delivered => "bg-success",
+                                        MyMvcApp.Models.OrderStatus.Cancelled => "bg-danger",
+                                        _ => "bg-secondary"
+                                    };
+                                }
+                                <span class="badge @statusClass">@order.Status</span>
+                            </td>
+                            <td>
+                                <div>@order.OrderDate.ToString("MMM dd, yyyy")</div>
+                                <small class="text-muted">@order.OrderDate.ToString("HH:mm")</small>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="@Url.Action("OrderDetails", new { id = order.Id })" class="btn btn-sm btn-outline-primary">
+                                        👁️ View Details
+                                    </a>
+                                    @if (order.Status == MyMvcApp.Models.OrderStatus.Pending)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-success" onclick="acceptOrder(@order.Id)">
+                                            ✅ Accept
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="rejectOrder(@order.Id)">
+                                            ❌ Reject
+                                        </button>
+                                    }
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                            📝 Update Status
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#" onclick="updateOrderStatus(@order.Id, 'Confirmed')">✅ Confirm</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="updateOrderStatus(@order.Id, 'Processing')">⚙️ Processing</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="updateOrderStatus(@order.Id, 'Shipped')">🚚 Shipped</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="updateOrderStatus(@order.Id, 'Delivered')">📦 Delivered</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="#" onclick="updateOrderStatus(@order.Id, 'Cancelled')">❌ Cancel</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Order Details Modal -->
+<div class="modal fade" id="orderDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Order Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="orderDetailsContent">
+                <!-- Order details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function filterOrders() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const table = document.getElementById('ordersTable');
+            const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+            for (let row of rows) {
+                const statusCell = row.cells[4];
+                const status = statusCell.textContent.trim();
+
+                if (!statusFilter || status === statusFilter) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        }
+
+        function updateOrderStatus(orderId, status) {
+            if (confirm(`Are you sure you want to update order #${orderId} status to "${status}"?`)) {
+                fetch('/Admin/UpdateOrderStatusAjax', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: orderId, status: status })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('success', data.message);
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        showAlert('danger', data.message);
+                    }
+                })
+                .catch(error => {
+                    showAlert('danger', 'An error occurred while updating the order status.');
+                });
+            }
+        }
+
+        function acceptOrder(orderId) {
+            if (confirm('Are you sure you want to accept this order?')) {
+                fetch('/Admin/AcceptOrder', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: orderId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('success', data.message);
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        showAlert('danger', data.message);
+                    }
+                })
+                .catch(error => {
+                    showAlert('danger', 'An error occurred while accepting the order.');
+                });
+            }
+        }
+
+        function rejectOrder(orderId) {
+            if (confirm('Are you sure you want to reject this order?')) {
+                fetch('/Admin/RejectOrder', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: orderId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('success', data.message);
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        showAlert('danger', data.message);
+                    }
+                })
+                .catch(error => {
+                    showAlert('danger', 'An error occurred while rejecting the order.');
+                });
+            }
+        }
+
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.insertBefore(alertDiv, document.body.firstChild);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.parentNode.removeChild(alertDiv);
+                }
+            }, 5000);
+        }
+    </script>
+}

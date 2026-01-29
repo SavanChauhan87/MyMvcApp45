@@ -1,0 +1,236 @@
+@model MyMvcApp.Models.Product
+@{
+    ViewData["Title"] = "Edit Product";
+    Layout = "_AdminLayout";
+}
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">✏️ Edit Product: @Model.Name</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="EditProduct" method="post" enctype="multipart/form-data">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="CreatedAt" />
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Name" class="form-label">Product Name *</label>
+                                <input asp-for="Name" class="form-control" placeholder="e.g., Paracetamol 500mg">
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Category" class="form-label">Category *</label>
+                                <select asp-for="Category" class="form-select">
+                                    <option value="">Select Category</option>
+                                    <option value="Pain Relief">Pain Relief</option>
+                                    <option value="Antibiotics">Antibiotics</option>
+                                    <option value="Vitamins">Vitamins</option>
+                                    <option value="Digestive Health">Digestive Health</option>
+                                    <option value="Cardiovascular">Cardiovascular</option>
+                                    <option value="Respiratory">Respiratory</option>
+                                    <option value="Diabetes">Diabetes</option>
+                                    <option value="Skin Care">Skin Care</option>
+                                    <option value="First Aid">First Aid</option>
+                                </select>
+                                <span asp-validation-for="Category" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">Description</label>
+                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Product description..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Price" class="form-label">Price *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="Price" class="form-control" type="number" step="0.01" min="0.01" placeholder="0.00">
+                                </div>
+                                <span asp-validation-for="Price" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="StockQuantity" class="form-label">Stock Quantity *</label>
+                                <input asp-for="StockQuantity" class="form-control" type="number" min="0" placeholder="0">
+                                <span asp-validation-for="StockQuantity" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Manufacturer" class="form-label">Manufacturer</label>
+                                <input asp-for="Manufacturer" class="form-control" placeholder="e.g., ABC Pharma">
+                                <span asp-validation-for="Manufacturer" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="DosageForm" class="form-label">Dosage Form</label>
+                                <select asp-for="DosageForm" class="form-select">
+                                    <option value="">Select Form</option>
+                                    <option value="Tablet">Tablet</option>
+                                    <option value="Capsule">Capsule</option>
+                                    <option value="Syrup">Syrup</option>
+                                    <option value="Injection">Injection</option>
+                                    <option value="Cream">Cream</option>
+                                    <option value="Ointment">Ointment</option>
+                                    <option value="Drops">Drops</option>
+                                    <option value="Inhaler">Inhaler</option>
+                                    <option value="Suppository">Suppository</option>
+                                </select>
+                                <span asp-validation-for="DosageForm" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Strength" class="form-label">Strength</label>
+                                <input asp-for="Strength" class="form-control" placeholder="e.g., 500mg, 10ml">
+                                <span asp-validation-for="Strength" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input asp-for="IsActive" class="form-check-input" type="checkbox">
+                                    <label asp-for="IsActive" class="form-check-label">
+                                        Active Product
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Image Upload Section -->
+                    <div class="mb-3">
+                        <label class="form-label">Product Image</label>
+                        
+                        <!-- Current Image Display -->
+                        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Current Image:</label>
+                                <div>
+                                    <img src="@Model.ImageUrl" alt="Current Product Image" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                                </div>
+                            </div>
+                        }
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="imageFile" class="form-label">Upload New Image File</label>
+                                    <input type="file" id="imageFile" name="imageFile" class="form-control" accept="image/*">
+                                    <div class="form-text">Upload a new product image (JPG, PNG, GIF)</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="ImageUrl" class="form-label">Or Image URL</label>
+                                    <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/image.jpg">
+                                    <div class="form-text">Provide an image URL if not uploading a file</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="imagePreview" class="mt-2" style="display: none;">
+                            <label class="form-label">New Image Preview:</label>
+                            <div>
+                                <img id="previewImg" src="" alt="Preview" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Created At</label>
+                                <input type="text" class="form-control" value="@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Last Updated</label>
+                                <input type="text" class="form-control" value="@Model.UpdatedAt.ToString("yyyy-MM-dd HH:mm")" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Products" class="btn btn-secondary">
+                            ← Back to Products
+                        </a>
+                        <div>
+                            <button type="submit" class="btn btn-primary">
+                                💾 Update Product
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-format price input
+        document.getElementById('Price').addEventListener('input', function(e) {
+            let value = e.target.value;
+            if (value && !isNaN(value)) {
+                e.target.value = parseFloat(value).toFixed(2);
+            }
+        });
+
+        // Auto-format stock quantity
+        document.getElementById('StockQuantity').addEventListener('input', function(e) {
+            let value = e.target.value;
+            if (value && !isNaN(value)) {
+                e.target.value = Math.floor(parseFloat(value));
+            }
+        });
+
+        // Image preview functionality
+        document.getElementById('imageFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('imagePreview').style.display = 'none';
+            }
+        });
+
+        // URL preview functionality
+        document.getElementById('ImageUrl').addEventListener('input', function(e) {
+            const url = e.target.value;
+            if (url && url.startsWith('http')) {
+                document.getElementById('previewImg').src = url;
+                document.getElementById('imagePreview').style.display = 'block';
+            } else {
+                document.getElementById('imagePreview').style.display = 'none';
+            }
+        });
+    </script>
+}

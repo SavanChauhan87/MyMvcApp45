@@ -1,0 +1,216 @@
+@model List<MyMvcApp.Models.CartItem>
+@{
+    ViewData["Title"] = "Shopping Cart";
+    var username = Context.Session.GetString("Username");
+    var userFullName = Context.Session.GetString("UserFullName");
+    var userRole = Context.Session.GetString("UserRole");
+}
+
+<div class="container-fluid">
+    <!-- User Header -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-1">Welcome, @userFullName!</h4>
+                            <p class="mb-0">Role: @userRole | Username: @username</p>
+                        </div>
+                        <div>
+                            <a asp-controller="Auth" asp-action="Logout" class="btn btn-light">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>🛒 Shopping Cart</h2>
+                <a asp-controller="Shop" asp-action="Index" class="btn btn-outline-primary">
+                    ← Continue Shopping
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <!-- Cart Items -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Cart Items (@Model.Count)</h5>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var item in Model)
+                        {
+                            <div class="row mb-3 cart-item" data-product-id="@item.ProductId">
+                                <div class="col-md-2">
+                                    @if (!string.IsNullOrEmpty(item.Product.ImageUrl))
+                                    {
+                                        <img src="@item.Product.ImageUrl" alt="@item.Product.Name" class="img-fluid rounded" style="max-width: 80px; max-height: 80px; object-fit: contain;">
+                                    }
+                                    else
+                                    {
+                                        <span style="font-size: 2rem;">💊</span>
+                                    }
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="mb-1">@item.Product.Name</h6>
+                                    <p class="text-muted mb-1">@item.Product.Strength @item.Product.DosageForm</p>
+                                    <p class="text-muted mb-0">@item.Product.Manufacturer</p>
+                                    @if (false)
+                                    {
+                                        <span class="badge bg-warning">Prescription Required</span>
+                                    }
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="input-group">
+                                        <button class="btn btn-outline-secondary btn-sm" onclick="updateQuantity(@item.ProductId, -1)">-</button>
+                                        <input type="number" class="form-control form-control-sm text-center" value="@item.Quantity" min="1" max="@item.Product.StockQuantity" onchange="updateQuantity(@item.ProductId, this.value - @item.Quantity)">
+                                        <button class="btn btn-outline-secondary btn-sm" onclick="updateQuantity(@item.ProductId, 1)">+</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <span class="h6 text-primary">$@item.Product.Price</span>
+                                </div>
+                                <div class="col-md-2">
+                                    <span class="h6 text-success">$@(item.Product.Price * item.Quantity)</span>
+                                </div>
+                                <div class="col-md-12 mt-2">
+                                    <button class="btn btn-danger btn-sm" onclick="removeFromCart(@item.ProductId)">
+                                        🗑️ Remove
+                                    </button>
+                                </div>
+                            </div>
+                            <hr>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">📋 Order Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        @{
+                            var subtotal = Model.Sum(item => item.Product.Price * item.Quantity);
+                            var tax = subtotal * 0.05m; // 5% tax
+                            var total = subtotal + tax;
+                        }
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <span>$@subtotal.ToString("F2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tax (5%):</span>
+                            <span>$@tax.ToString("F2")</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Total:</strong>
+                            <strong class="text-primary">$@total.ToString("F2")</strong>
+                        </div>
+                        <button class="btn btn-success btn-lg w-100" onclick="proceedToCheckout()">
+                            💳 Proceed to Checkout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Empty Cart -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <span style="font-size: 4rem;">🛒</span>
+                        <h3 class="mt-3">Your cart is empty</h3>
+                        <p class="text-muted">Add some products to your cart to get started!</p>
+                        <a asp-controller="Shop" asp-action="Index" class="btn btn-primary btn-lg">
+                            🛍️ Start Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function updateQuantity(productId, change) {
+            const input = document.querySelector(`[data-product-id="${productId}"] input`);
+            const currentValue = parseInt(input.value);
+            const newValue = Math.max(1, currentValue + change);
+            input.value = newValue;
+            
+            // Update cart via AJAX
+            fetch('/Shop/UpdateCart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    productId: productId,
+                    quantity: newValue
+                })
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            });
+        }
+
+        function removeFromCart(productId) {
+            if (confirm('Are you sure you want to remove this item from your cart?')) {
+                fetch('/Shop/RemoveFromCart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        productId: productId
+                    })
+                }).then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    }
+                });
+            }
+        }
+
+        function proceedToCheckout() {
+            window.location.href = '/Shop/Checkout';
+        }
+    </script>
+}
+
+<style>
+    .cart-item {
+        transition: background-color 0.2s;
+    }
+    .cart-item:hover {
+        background-color: #f8f9fa;
+    }
+    .input-group .form-control {
+        border-left: 0;
+        border-right: 0;
+    }
+    .input-group .btn {
+        border-radius: 0;
+    }
+</style>

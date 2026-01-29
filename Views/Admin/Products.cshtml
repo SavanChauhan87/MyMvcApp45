@@ -1,0 +1,175 @@
+@model List<MyMvcApp.Models.Product>
+@{
+    ViewData["Title"] = "Products Management";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>💊 Products Management</h2>
+    <a asp-action="AddProduct" class="btn btn-primary">
+        ➕ Add New Product
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success mb-3">@TempData["Success"]</div>
+        }
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="card-title mb-0">All Products (@Model.Count)</h5>
+            </div>
+            <div class="col-auto">
+                <div class="input-group">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search products...">
+                    <button class="btn btn-outline-secondary" type="button" onclick="searchProducts()">
+                        🔍 Search
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="productsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var product in Model)
+                    {
+                        <tr>
+                            <td>@product.Id</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                {
+                                    <img src="@product.ImageUrl" alt="@product.Name" class="product-thumbnail" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                                }
+                                else
+                                {
+                                    <div class="product-thumbnail-placeholder" style="width: 50px; height: 50px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #6c757d;">
+                                        💊
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>@product.Name</strong>
+                                </div>
+                                <small class="text-muted">@product.Manufacturer</small>
+                                <br>
+                                <small class="text-muted">@product.Strength @product.DosageForm</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">@product.Category</span>
+                            </td>
+                            <td>
+                                <strong>$@product.Price.ToString("F2")</strong>
+                            </td>
+                            <td>
+                                @if (product.StockQuantity < 20)
+                                {
+                                    <span class="text-danger fw-bold">@product.StockQuantity</span>
+                                }
+                                else if (product.StockQuantity < 50)
+                                {
+                                    <span class="text-warning fw-bold">@product.StockQuantity</span>
+                                }
+                                else
+                                {
+                                    <span class="text-success fw-bold">@product.StockQuantity</span>
+                                }
+                            </td>
+                            <td>
+                                @if (product.IsActive)
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Inactive</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a asp-action="EditProduct" asp-route-id="@product.Id" class="btn btn-sm btn-outline-primary">
+                                        ✏️ Edit
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteProduct(@product.Id, '@product.Name')">
+                                        🗑️ Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the product "<span id="productName"></span>"?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a id="confirmDelete" href="#" class="btn btn-danger">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function searchProducts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const table = document.getElementById('productsTable');
+            const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+            for (let row of rows) {
+                const name = row.cells[2].textContent.toLowerCase();
+                const category = row.cells[3].textContent.toLowerCase();
+                const manufacturer = row.cells[2].getElementsByTagName('small')[0].textContent.toLowerCase();
+
+                if (name.includes(searchTerm) || category.includes(searchTerm) || manufacturer.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        }
+
+        function deleteProduct(id, name) {
+            document.getElementById('productName').textContent = name;
+            document.getElementById('confirmDelete').href = `/Admin/DeleteProduct/${id}`;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+
+        // Search on Enter key
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchProducts();
+            }
+        });
+    </script>
+}

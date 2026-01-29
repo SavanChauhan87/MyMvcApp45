@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Admin Panel</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/MyMvcApp.styles.css" asp-append-version="true" />
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            margin: 0.25rem 0;
+        }
+        .sidebar .nav-link:hover {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .admin-header {
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+            padding: 1rem 0;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white">🏥 Admin Panel</h4>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")" 
+                               asp-controller="Admin" asp-action="Index">
+                                📊 Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Products" ? "active" : "")" 
+                               asp-controller="Admin" asp-action="Products">
+                                💊 Products
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Orders" ? "active" : "")" 
+                               asp-controller="Admin" asp-action="Orders">
+                                📦 Orders
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "AddProduct" ? "active" : "")" 
+                               asp-controller="Admin" asp-action="AddProduct">
+                                ➕ Add Product
+                            </a>
+                        </li>
+                        <li class="nav-item mt-4">
+                            <a class="nav-link" asp-controller="Shop" asp-action="Index">
+                                🏠 Back to Store
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="admin-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2>@ViewData["Title"]</h2>
+                        <div class="d-flex align-items-center">
+                            <div class="position-relative me-3">
+                                <button class="btn btn-outline-primary position-relative" onclick="toggleNotifications()">
+                                    🔔 Notifications
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notificationBadge" style="display: none;">
+                                        0
+                                    </span>
+                                </button>
+                                <div class="dropdown-menu" id="notificationDropdown" style="display: none; position: absolute; right: 0; top: 100%; z-index: 1000; min-width: 300px;">
+                                    <div class="dropdown-header">
+                                        <h6 class="mb-0">📬 New Orders</h6>
+                                    </div>
+                                    <div id="notificationList">
+                                        <!-- Notifications will be loaded here -->
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item text-center" href="@Url.Action("Orders")">
+                                        View All Orders
+                                    </a>
+                                </div>
+                            </div>
+                            <span class="text-muted">Welcome, Admin</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-3">
+                    @RenderBody()
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    <script>
+        let notificationCount = 0;
+        let lastOrderId = 0;
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notificationDropdown');
+            if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+                dropdown.style.display = 'block';
+                loadNotifications();
+            } else {
+                dropdown.style.display = 'none';
+            }
+        }
+
+        function loadNotifications() {
+            fetch('/Admin/GetPendingOrders')
+                .then(response => response.json())
+                .then(data => {
+                    const notificationList = document.getElementById('notificationList');
+                    const badge = document.getElementById('notificationBadge');
+                    
+                    if (data.length > 0) {
+                        notificationList.innerHTML = data.map(order => `
+                            <div class="dropdown-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">New Order #${order.id}</h6>
+                                        <p class="mb-1">${order.customerName}</p>
+                                        <small class="text-muted">$${order.totalAmount.toFixed(2)} - ${new Date(order.orderDate).toLocaleString()}</small>
+                                    </div>
+                                    <div>
+                                        <a href="/Admin/OrderDetails/${order.id}" class="btn btn-sm btn-outline-primary">View</a>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+                        
+                        badge.textContent = data.length;
+                        badge.style.display = 'inline-block';
+                        notificationCount = data.length;
+                    } else {
+                        notificationList.innerHTML = '<div class="dropdown-item text-center text-muted">No new orders</div>';
+                        badge.style.display = 'none';
+                        notificationCount = 0;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading notifications:', error);
+                });
+        }
+
+        function checkForNewOrders() {
+            fetch('/Admin/GetPendingOrders')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > notificationCount) {
+                        // New orders detected
+                        const badge = document.getElementById('notificationBadge');
+                        badge.textContent = data.length;
+                        badge.style.display = 'inline-block';
+                        
+                        // Show notification
+                        showNewOrderNotification(data[0]);
+                        
+                        notificationCount = data.length;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking for new orders:', error);
+                });
+        }
+
+        function showNewOrderNotification(order) {
+            const notification = document.createElement('div');
+            notification.className = 'alert alert-info alert-dismissible fade show position-fixed';
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <span style="font-size: 1.5rem;">📦</span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">New Order Received!</h6>
+                        <p class="mb-1">Order #${order.id} from ${order.customerName}</p>
+                        <small class="text-muted">$${order.totalAmount.toFixed(2)}</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 5000);
+        }
+
+        // Check for new orders every 30 seconds
+        setInterval(checkForNewOrders, 30000);
+
+        // Load notifications on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNotifications();
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('notificationDropdown');
+            const button = document.querySelector('[onclick="toggleNotifications()"]');
+            
+            if (!dropdown.contains(event.target) && !button.contains(event.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    </script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

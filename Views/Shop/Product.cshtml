@@ -1,0 +1,239 @@
+@model MyMvcApp.Models.Product
+@{
+    ViewData["Title"] = Model.Name;
+    var username = Context.Session.GetString("Username");
+    var userFullName = Context.Session.GetString("UserFullName");
+    var userRole = Context.Session.GetString("UserRole");
+}
+
+<div class="container-fluid">
+    <!-- User Header -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-1">Welcome, @userFullName!</h4>
+                            <p class="mb-0">Role: @userRole | Username: @username</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a asp-controller="Shop" asp-action="Cart" class="btn btn-light">
+                                🛒 Cart
+                            </a>
+                            <a asp-controller="Auth" asp-action="Logout" class="btn btn-outline-light">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Breadcrumb -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Shop" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Shop" asp-action="Category" asp-route-category="@Model.Category">@Model.Category</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Product Details -->
+    <div class="row">
+        <div class="col-md-4 text-center">
+            <div class="mb-3">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" class="img-fluid rounded product-detail-image" alt="@Model.Name" style="max-width: 100%; max-height: 300px; object-fit: contain;">
+                }
+                else
+                {
+                    <span style="font-size: 8rem;">💊</span>
+                }
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">@Model.Name</h2>
+                    <p class="text-muted">@Model.Manufacturer</p>
+                    
+                    <div class="mb-3">
+                        <span class="badge bg-primary me-2">@Model.Category</span>
+                        @if (false)
+                        {
+                            <span class="badge bg-warning">Prescription Required</span>
+                        }
+                    </div>
+                    
+                    <p class="card-text">@Model.Description</p>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Strength:</strong> @Model.Strength
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Dosage Form:</strong> @Model.DosageForm
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Stock Available:</strong> @Model.StockQuantity units
+                        </div>
+                        <div class="col-md-6">
+                            <strong>SKU:</strong> @Model.Id
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="h3 text-primary">$@Model.Price</span>
+                            <span class="text-muted">per unit</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="input-group" style="width: 120px;">
+                                <button class="btn btn-outline-secondary" onclick="updateQuantity(-1)">-</button>
+                                <input type="number" id="quantity" class="form-control text-center" value="1" min="1" max="@Model.StockQuantity">
+                                <button class="btn btn-outline-secondary" onclick="updateQuantity(1)">+</button>
+                            </div>
+                            <button onclick="addToCart()" class="btn btn-success btn-lg">
+                                🛒 Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3>🔄 Related Products</h3>
+            <p class="text-muted">Other products in the same category</p>
+        </div>
+    </div>
+
+    <div class="row">
+        @{
+            var relatedProducts = ViewBag.RelatedProducts as List<MyMvcApp.Models.Product>;
+        }
+        
+        @if (relatedProducts.Any())
+        {
+            @foreach (var product in relatedProducts)
+            {
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100 product-card">
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                {
+                                    <img src="@product.ImageUrl" alt="@product.Name" class="product-image" style="max-width: 100%; max-height: 100px; object-fit: contain;">
+                                }
+                                else
+                                {
+                                    <span style="font-size: 2rem;">💊</span>
+                                }
+                            </div>
+                            <h6 class="card-title">@product.Name</h6>
+                            <p class="card-text text-muted small">@product.Strength @product.DosageForm</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="h6 text-primary">$@product.Price</span>
+                                <a asp-controller="Shop" asp-action="Product" asp-route-id="@product.Id" class="btn btn-outline-primary btn-sm">
+                                    View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <p class="text-muted text-center">No related products found.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateQuantity(change) {
+            const input = document.getElementById('quantity');
+            const currentValue = parseInt(input.value);
+            const newValue = Math.max(1, Math.min(currentValue + change, @Model.StockQuantity));
+            input.value = newValue;
+        }
+
+        function addToCart() {
+            const quantity = parseInt(document.getElementById('quantity').value);
+            
+            fetch('/Shop/AddToCart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `productId=@Model.Id&quantity=${quantity}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Added ${quantity} unit(s) of @Model.Name to cart successfully!`);
+                } else {
+                    alert(data.message || 'Failed to add product to cart');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to add product to cart');
+            });
+        }
+
+        // Update quantity when input changes
+        document.getElementById('quantity').addEventListener('change', function() {
+            const value = parseInt(this.value);
+            const max = @Model.StockQuantity;
+            if (value < 1) this.value = 1;
+            if (value > max) this.value = max;
+        });
+    </script>
+}
+
+<style>
+    .product-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #dee2e6;
+    }
+    .product-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .card {
+        border-radius: 10px;
+    }
+    .btn {
+        border-radius: 8px;
+    }
+    .product-detail-image {
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border: 1px solid #dee2e6;
+    }
+    .breadcrumb {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+    }
+</style>

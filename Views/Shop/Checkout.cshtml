@@ -1,0 +1,232 @@
+@model MyMvcApp.Models.Order
+@{
+    ViewData["Title"] = "Checkout";
+    var username = Context.Session.GetString("Username");
+    var userFullName = Context.Session.GetString("UserFullName");
+    var userRole = Context.Session.GetString("UserRole");
+    var cartItems = ViewBag.CartItems as List<MyMvcApp.Models.CartItem> ?? new List<MyMvcApp.Models.CartItem>();
+}
+
+<div class="container-fluid">
+    <!-- User Header -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-1">Welcome, @userFullName!</h4>
+                            <p class="mb-0">Role: @userRole | Username: @username</p>
+                        </div>
+                        <div>
+                            <a asp-controller="Auth" asp-action="Logout" class="btn btn-light">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>💳 Checkout</h2>
+                <a asp-controller="Shop" asp-action="Cart" class="btn btn-outline-primary">
+                    ← Back to Cart
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="Checkout" method="post">
+        <div class="row">
+            <!-- Order Details -->
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">📋 Order Details</h5>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var item in cartItems)
+                        {
+                            <div class="row mb-3">
+                                <div class="col-md-2">
+                                    @if (!string.IsNullOrEmpty(item.Product.ImageUrl))
+                                    {
+                                        <img src="@item.Product.ImageUrl" alt="@item.Product.Name" class="img-fluid rounded" style="max-width: 60px; max-height: 60px; object-fit: contain;">
+                                    }
+                                    else
+                                    {
+                                        <span style="font-size: 1.5rem;">💊</span>
+                                    }
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="mb-1">@item.Product.Name</h6>
+                                    <p class="text-muted mb-0">@item.Product.Strength @item.Product.DosageForm</p>
+                                </div>
+                                <div class="col-md-2">
+                                    <span class="text-muted">Qty: @item.Quantity</span>
+                                </div>
+                                <div class="col-md-2">
+                                    <span class="h6 text-primary">$@(item.Product.Price * item.Quantity)</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Shipping Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">🚚 Shipping Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="CustomerName" class="form-label">Full Name *</label>
+                                    <input asp-for="CustomerName" class="form-control" required>
+                                    <span asp-validation-for="CustomerName" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="CustomerPhone" class="form-label">Phone Number *</label>
+                                    <input asp-for="CustomerPhone" class="form-control" required>
+                                    <span asp-validation-for="CustomerPhone" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="ShippingAddress" class="form-label">Shipping Address *</label>
+                            <textarea asp-for="ShippingAddress" class="form-control" rows="3" required></textarea>
+                            <span asp-validation-for="ShippingAddress" class="text-danger"></span>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="City" class="form-label">City *</label>
+                                    <input asp-for="City" class="form-control" required>
+                                    <span asp-validation-for="City" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="PostalCode" class="form-label">Postal Code *</label>
+                                    <input asp-for="PostalCode" class="form-control" required>
+                                    <span asp-validation-for="PostalCode" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Special Instructions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">📝 Special Instructions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Delivery Instructions</label>
+                            <textarea class="form-control" name="SpecialInstructions" rows="3" placeholder="Any special delivery instructions or notes..."></textarea>
+                        </div>
+                        
+                        <!-- Payment Method Notice -->
+                        <div class="alert alert-info">
+                            <div class="d-flex align-items-center">
+                                <span style="font-size: 1.5rem;" class="me-3">💰</span>
+                                <div>
+                                    <strong>Payment Method: Cash on Delivery (COD)</strong>
+                                    <p class="mb-0 text-muted">You will pay when your order arrives at your doorstep.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <input type="hidden" name="PaymentMethod" value="Cash on Delivery" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">📋 Order Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        @{
+                            var subtotal = cartItems.Sum(item => item.Product.Price * item.Quantity);
+                            var tax = subtotal * 0.05m; // 5% tax
+                            var shipping = 5.00m; // Fixed shipping cost
+                            var total = subtotal + tax + shipping;
+                        }
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <span>$@subtotal.ToString("F2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tax (5%):</span>
+                            <span>$@tax.ToString("F2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Shipping:</span>
+                            <span>$@shipping.ToString("F2")</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Total:</strong>
+                            <strong class="text-primary">$@total.ToString("F2")</strong>
+                        </div>
+                        
+                        <input type="hidden" name="TotalAmount" value="@total" />
+                        <input type="hidden" name="Subtotal" value="@subtotal" />
+                        <input type="hidden" name="TaxAmount" value="@tax" />
+                        <input type="hidden" name="ShippingCost" value="@shipping" />
+                        
+                        <button type="submit" class="btn btn-success btn-lg w-100">
+                            💳 Place Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const requiredFields = this.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.classList.add('is-invalid');
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('Please fill in all required fields.');
+            }
+        });
+    </script>
+}
+
+<style>
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .btn {
+        border-radius: 8px;
+    }
+</style>

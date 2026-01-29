@@ -1,0 +1,201 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "_AdminLayout";
+    var username = Context.Session.GetString("Username");
+    var userFullName = Context.Session.GetString("UserFullName");
+    var userRole = Context.Session.GetString("UserRole");
+}
+
+<!-- User Welcome Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-primary text-white">
+            <div class="card-body py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1">Welcome, @userFullName!</h4>
+                        <p class="mb-0">Admin Dashboard | Username: @username</p>
+                    </div>
+                    <div>
+                        <a asp-controller="Auth" asp-action="Logout" class="btn btn-light">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Total Products
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">@ViewBag.TotalProducts</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-pills fa-2x text-white-50"></i>
+                        <span style="font-size: 2rem;">💊</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Total Orders
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">@ViewBag.TotalOrders</div>
+                    </div>
+                    <div class="col-auto">
+                        <span style="font-size: 2rem;">📦</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Pending Orders
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">@ViewBag.PendingOrders</div>
+                    </div>
+                    <div class="col-auto">
+                        <span style="font-size: 2rem;">⏳</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Low Stock Items
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold">@ViewBag.LowStockProducts</div>
+                    </div>
+                    <div class="col-auto">
+                        <span style="font-size: 2rem;">⚠️</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Recent Orders</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var recentOrders = ViewBag.RecentOrders as List<MyMvcApp.Models.Order> ?? new List<MyMvcApp.Models.Order>();
+                            }
+                            @if (recentOrders.Any())
+                            {
+                                @foreach (var order in recentOrders.Take(5))
+                                {
+                                    var statusClass = order.Status switch
+                                    {
+                                        MyMvcApp.Models.OrderStatus.Pending => "bg-warning",
+                                        MyMvcApp.Models.OrderStatus.Confirmed => "bg-info",
+                                        MyMvcApp.Models.OrderStatus.Processing => "bg-primary",
+                                        MyMvcApp.Models.OrderStatus.Shipped => "bg-secondary",
+                                        MyMvcApp.Models.OrderStatus.Delivered => "bg-success",
+                                        MyMvcApp.Models.OrderStatus.Cancelled => "bg-danger",
+                                        _ => "bg-secondary"
+                                    };
+                                    <tr>
+                                        <td>
+                                            <a href="@Url.Action("OrderDetails", new { id = order.Id })" class="text-decoration-none">
+                                                #@order.Id
+                                            </a>
+                                        </td>
+                                        <td>@order.CustomerName</td>
+                                        <td>$@order.TotalAmount.ToString("F2")</td>
+                                        <td><span class="badge @statusClass">@order.Status</span></td>
+                                        <td>@order.OrderDate.ToString("MMM dd, yyyy")</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No recent orders found</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-controller="Admin" asp-action="AddProduct" class="btn btn-primary">
+                        ➕ Add New Product
+                    </a>
+                    <a asp-controller="Admin" asp-action="Products" class="btn btn-outline-primary">
+                        💊 Manage Products
+                    </a>
+                    <a asp-controller="Admin" asp-action="Orders" class="btn btn-outline-primary">
+                        📦 View Orders
+                    </a>
+                    <a asp-controller="Shop" asp-action="Index" class="btn btn-outline-secondary">
+                        🏠 View Store
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0">System Info</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Version:</strong> 1.0.0</p>
+                <p><strong>Last Updated:</strong> @DateTime.Now.ToString("yyyy-MM-dd")</p>
+                <p><strong>Status:</strong> <span class="badge bg-success">Online</span></p>
+            </div>
+        </div>
+    </div>
+</div>

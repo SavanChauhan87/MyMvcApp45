@@ -1,0 +1,215 @@
+﻿@model List<MyMvcApp.Models.Product>
+@{
+    ViewData["Title"] = "Home - Pharmacy Store";
+}
+
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center py-5">
+                    <h1 class="display-4">🏥 Welcome to Our Pharmacy</h1>
+                    <p class="lead">Your trusted source for quality medications and health products</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a asp-controller="Auth" asp-action="Login" class="btn btn-light btn-lg">
+                            🔐 Login
+                        </a>
+                        <a asp-controller="Auth" asp-action="Register" class="btn btn-outline-light btn-lg">
+                            📝 Register
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Products Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>🛍️ All Available Products</h3>
+                <a asp-controller="Auth" asp-action="Login" class="btn btn-primary">
+                    🔐 Login to Order
+                </a>
+            </div>
+            <p class="text-muted">Browse our complete collection of medications and health products</p>
+        </div>
+    </div>
+
+    <div class="row">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var product in Model)
+            {
+                <div class="col-md-4 col-lg-3 mb-4">
+                    <div class="card h-100 product-card">
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                {
+                                    <img src="@product.ImageUrl" alt="@product.Name" class="product-image" style="max-width: 100%; max-height: 150px; object-fit: contain;">
+                                }
+                                else
+                                {
+                                    <span style="font-size: 3rem;">💊</span>
+                                }
+                            </div>
+                            <h5 class="card-title">@product.Name</h5>
+                            <p class="card-text text-muted">@product.Description</p>
+                            <div class="mb-2">
+                                <span class="badge bg-primary">@product.Category</span>
+                                @if (false)
+                                {
+                                    <span class="badge bg-warning">Prescription Required</span>
+                                }
+                            </div>
+                            <p class="card-text">
+                                <strong>Strength:</strong> @product.Strength<br>
+                                <strong>Form:</strong> @product.DosageForm<br>
+                                <strong>Stock:</strong> @product.StockQuantity units
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="h5 text-primary mb-0">$@product.Price</span>
+                                <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-primary">
+                                    🔐 Login to View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <h4>No products available</h4>
+                    <p>Products will appear here once they are added through the admin panel.</p>
+                    <a asp-controller="Auth" asp-action="Login" class="btn btn-primary">Admin Login</a>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Categories Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3>💊 Browse Categories</h3>
+            <p class="text-muted">Find medications by category</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <a asp-controller="Auth" asp-action="Login" class="text-decoration-none">
+                <div class="card text-center h-100 category-card">
+                    <div class="card-body">
+                        <span style="font-size: 3rem;">💊</span>
+                        <h5 class="card-title">Pain Relief</h5>
+                        <p class="card-text text-muted">Pain medications and analgesics</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a asp-controller="Auth" asp-action="Login" class="text-decoration-none">
+                <div class="card text-center h-100 category-card">
+                    <div class="card-body">
+                        <span style="font-size: 3rem;">🦠</span>
+                        <h5 class="card-title">Antibiotics</h5>
+                        <p class="card-text text-muted">Prescription antibiotics</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a asp-controller="Auth" asp-action="Login" class="text-decoration-none">
+                <div class="card text-center h-100 category-card">
+                    <div class="card-body">
+                        <span style="font-size: 3rem;">🥬</span>
+                        <h5 class="card-title">Vitamins</h5>
+                        <p class="card-text text-muted">Vitamins and supplements</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a asp-controller="Auth" asp-action="Login" class="text-decoration-none">
+                <div class="card text-center h-100 category-card">
+                    <div class="card-body">
+                        <span style="font-size: 3rem;">🫀</span>
+                        <h5 class="card-title">Digestive Health</h5>
+                        <p class="card-text text-muted">Digestive medications</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h4>🔐 Ready to Shop?</h4>
+                    <p class="lead">Login or create an account to start ordering medications</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a asp-controller="Auth" asp-action="Login" class="btn btn-primary btn-lg">
+                            🔐 Login
+                        </a>
+                        <a asp-controller="Auth" asp-action="Register" class="btn btn-success btn-lg">
+                            📝 Create Account
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">👨‍⚕️ Admin Access</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="mb-3">Are you an administrator? Access the admin panel to manage products and orders.</p>
+                    <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-primary">
+                        🔐 Admin Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .product-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #dee2e6;
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .category-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #dee2e6;
+    }
+    .category-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .card {
+        border-radius: 10px;
+    }
+    .btn {
+        border-radius: 8px;
+    }
+    .product-image {
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+</style>

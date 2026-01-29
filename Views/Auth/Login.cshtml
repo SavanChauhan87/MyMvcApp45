@@ -1,0 +1,178 @@
+@{
+    ViewData["Title"] = "Login - Pharmacy Store";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+            <!-- Left Side - Welcome Section -->
+            <div class="col-lg-6 d-none d-lg-flex align-items-center justify-content-center bg-primary text-white">
+                <div class="text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-clinic-medical" style="font-size: 4rem;"></i>
+                    </div>
+                    <h1 class="display-4 fw-bold mb-3">Welcome to Our Pharmacy</h1>
+                    <p class="lead mb-4">Your trusted source for quality medications and health products</p>
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <i class="fas fa-pills mb-2" style="font-size: 2rem;"></i>
+                            <h5>Quality Medicines</h5>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-shipping-fast mb-2" style="font-size: 2rem;"></i>
+                            <h5>Fast Delivery</h5>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-user-md mb-2" style="font-size: 2rem;"></i>
+                            <h5>Expert Support</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side - Login Form -->
+            <div class="col-lg-6 d-flex align-items-center justify-content-center">
+                <div class="w-100" style="max-width: 400px;">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold text-primary">Sign In</h2>
+                        <p class="text-muted">Welcome back! Please sign in to your account.</p>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            @ViewBag.ErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(ViewBag.SuccessMessage))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            @ViewBag.SuccessMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4">
+                            <form asp-action="Login" method="post">
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-user"></i>
+                                        </span>
+                                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-lock"></i>
+                                        </span>
+                                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="rememberMe">
+                                    <label class="form-check-label" for="rememberMe">
+                                        Remember me
+                                    </label>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-100 mb-3">
+                                    <i class="fas fa-sign-in-alt me-2"></i>
+                                    Sign In
+                                </button>
+                            </form>
+
+                            <div class="text-center">
+                                <p class="text-muted mb-0">Don't have an account?</p>
+                                <a asp-action="Register" class="btn btn-outline-primary mt-2">
+                                    <i class="fas fa-user-plus me-2"></i>
+                                    Create Account
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Demo Credentials -->
+                    <div class="mt-4">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Demo Credentials
+                                </h6>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">Admin:</small><br>
+                                        <code>admin / admin123</code>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Customer:</small><br>
+                                        <code>customer1 / customer123</code>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>
+
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .card {
+        border-radius: 15px;
+    }
+    
+    .btn {
+        border-radius: 8px;
+        padding: 12px 24px;
+    }
+    
+    .form-control {
+        border-radius: 8px;
+        padding: 12px 16px;
+    }
+    
+    .input-group-text {
+        border-radius: 8px 0 0 8px;
+    }
+    
+    .alert {
+        border-radius: 10px;
+    }
+    
+    .bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+</style>

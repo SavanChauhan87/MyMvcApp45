@@ -1,0 +1,90 @@
+@model List<MyMvcApp.Models.Product>
+@{
+    ViewData["Title"] = ViewBag.Category;
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h2>💊 @ViewBag.Category</h2>
+                    <p class="mb-0">
+                        Found <strong>@Model.Count</strong> product(s) in this category
+                        <a asp-action="Index" class="btn btn-light btn-sm ms-3">← Back to All Categories</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="row">
+            @foreach (var product in Model)
+            {
+                <div class="col-md-4 col-lg-3 mb-4">
+                    <div class="card h-100 product-card">
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <span style="font-size: 3rem;">💊</span>
+                            </div>
+                            <h5 class="card-title">@product.Name</h5>
+                            <p class="card-text text-muted">@product.Description</p>
+                            <div class="mb-2">
+                                <span class="badge bg-primary">@product.Category</span>
+                                @if (false)
+                                {
+                                    <span class="badge bg-warning">Prescription Required</span>
+                                }
+                            </div>
+                            <p class="card-text">
+                                <strong>Strength:</strong> @product.Strength<br>
+                                <strong>Form:</strong> @product.DosageForm<br>
+                                <strong>Stock:</strong> @product.StockQuantity units
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="h5 text-primary mb-0">$@product.Price</span>
+                                <a asp-action="Product" asp-route-id="@product.Id" class="btn btn-outline-primary">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <span style="font-size: 4rem;">💊</span>
+                        <h4 class="mt-3">No products in this category</h4>
+                        <p class="text-muted">We don't have any products in the @ViewBag.Category category at the moment.</p>
+                        <a asp-action="Index" class="btn btn-primary">Browse Other Categories</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .product-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #dee2e6;
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .card {
+        border-radius: 10px;
+    }
+    .btn {
+        border-radius: 8px;
+    }
+</style>
